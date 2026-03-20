@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Result</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: url('|thisSrc|') no-repeat center center fixed;
+      background-size: cover;
+      font-family: Arial, sans-serif;
+      color: #fff;
+    }
+    .container {
+      position: absolute;
+      bottom: 200px;
+      left: 30%;
+      transform: translateX(-50%);
+      max-width: 1200px;
+      padding: 30px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 20px;
+      box-shadow: |thisContainerShadow|
+      text-align: left;
+      padding-left: 40px;
+    }
+    .pair {
+      font-size: 2em;
+      font-weight: bold;
+      color: #4ac7ff;
+    }
+    .market {
+      font-size: 1.2em;
+      color: #aaa;
+    }
+    .profit {
+      font-size: 4em;
+      font-weight: bold;
+      color: |thisColor|;
+      margin-top: 20px;
+      text-shadow: |thisProfitShadow|
+    }
+    .stats {
+      font-size: 1.5em;
+      margin-top: 20px;
+    }
+    .stats span {
+      color: #4ac7ff;
+      font-weight: bold;
+    }
+    .icon {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      max-width: 150px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="pair">|thisPair| <span class="market">| PDBETS </span></div>
+    <div class="profit">|thisResult|</div>
+    <div class="stats">
+      Initial Worth: <span>|thisInitial|</span><br>
+      Current Worth: <span>|thisCurrent|</span>
+    </div>
+    <!-- <img class="icon" src="crown_icon.png" alt="Crown Icon"> -->
+  </div>
+</body>
+</html>

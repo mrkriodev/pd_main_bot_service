@@ -167,3 +167,5 @@ redis-data/*
 !redis-data/.keep
 
 .vscode/
+html/*.html
+*.backup

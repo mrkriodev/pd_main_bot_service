@@ -1,0 +1,41 @@
+services:
+  dexlot-bot-dev:
+    image: dexlot-bot-dev
+    container_name: dexlot-bot-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    command: python main.py
+    user: "1000:1000"
+    restart: unless-stopped
+    env_file: .env
+    environment:
+    - MPLCONFIGDIR=/tmp/matplotlib
+    ports:
+      - "${DOCKER_IP}:${DOCKER_PORT}:8000"
+
+  # dexlot-bot-notification-dev:
+  #   image: dexlot-bot-dev
+  #   container_name: dexlot-bot-notification-dev
+  #   command: python -m service.notifications
+  #   user: "1000:1000"
+  #   restart: unless-stopped
+  #   env_file: .env
+  #   environment:
+  #     - APP_CONFIG__DB__HOST=host.docker.internal
+  #     - APP_CONFIG__DB__PORT=5433
+  #   volumes:
+  #     - ./html/:/app/utils/generator_images/html:rw
+
+  dexlot-bot-redis-dev:
+    image: redis:latest
+    container_name: dexlot-bot-redis-dev
+    volumes:
+      - ./redis-data/:/data:rw
+    restart: unless-stopped
+    user: "1000:1000"
+
+networks:
+    dexlot-bot-network-dev:
+        driver: bridge

@@ -1,0 +1,38 @@
+services:
+  dexlot-bot-prod:
+    image: dexlot-bot-prod
+    container_name: dexlot-bot-prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    command: python main.py
+    user: "1000:1000"
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${DOCKER_IP}:${DOCKER_PORT}:8000"
+
+
+  dexlot-bot-notification-prod:
+    image: dexlot-bot-prod
+    container_name: dexlot-bot-notification-prod
+    command: python -m service.notifications
+    user: "1000:1000"
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./html/:/app/utils/generator_images/html:rw
+
+
+  dexlot-bot-redis-prod:
+    image: redis:latest
+    container_name: dexlot-bot-redis-prod
+    volumes:
+      - ./redis-data/:/data:rw
+    restart: unless-stopped
+    user: "1000:1000"
+
+networks:
+    dexlot-bot-network-prod:
+        driver: bridge
