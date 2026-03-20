@@ -10,19 +10,21 @@ services:
     user: "1000:1000"
     restart: unless-stopped
     env_file: .env
+    environment:
+      - MPLCONFIGDIR=/tmp/matplotlib
     ports:
       - "${DOCKER_IP}:${DOCKER_PORT}:8000"
 
 
-  dexlot-bot-notification-prod:
-    image: dexlot-bot-prod
-    container_name: dexlot-bot-notification-prod
-    command: python -m service.notifications
-    user: "1000:1000"
-    restart: unless-stopped
-    env_file: .env
-    volumes:
-      - ./html/:/app/utils/generator_images/html:rw
+  # dexlot-bot-notification-prod:
+  #   image: dexlot-bot-prod
+  #   container_name: dexlot-bot-notification-prod
+  #   command: python -m service.notifications
+  #   user: "1000:1000"
+  #   restart: unless-stopped
+  #   env_file: .env
+  #   volumes:
+  #     - ./html/:/app/utils/generator_images/html:rw
 
 
   dexlot-bot-redis-prod:
