@@ -13,19 +13,9 @@ services:
     environment:
       - MPLCONFIGDIR=/tmp/matplotlib
     ports:
-      - "${DOCKER_IP}:${DOCKER_PORT}:8000"
-
-
-  # dexlot-bot-notification-prod:
-  #   image: dexlot-bot-prod
-  #   container_name: dexlot-bot-notification-prod
-  #   command: python -m service.notifications
-  #   user: "1000:1000"
-  #   restart: unless-stopped
-  #   env_file: .env
-  #   volumes:
-  #     - ./html/:/app/utils/generator_images/html:rw
-
+      - "${DOCKER_IP}:${DOCKER_PORT}:8080"
+    networks:
+      - dexlot-bot-network-prod  
 
   dexlot-bot-redis-prod:
     image: redis:latest
@@ -34,6 +24,8 @@ services:
       - ./redis-data/:/data:rw
     restart: unless-stopped
     user: "1000:1000"
+    networks:
+      - dexlot-bot-network-prod  
 
 networks:
     dexlot-bot-network-prod:

@@ -22,7 +22,7 @@ class WebHookSettings(BaseModel):
 
     webhook_path: str = "/webhook"
     webhook_secret: str = "my-secret"
-    base_webhook_url: str = "https://pumpdumpapp.com/"
+    base_webhook_url: str = "https://example.com/"
 
 
 class BotNotification(BaseModel):
