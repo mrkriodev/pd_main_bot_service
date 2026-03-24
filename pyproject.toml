@@ -8,6 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+aiohttp = "^3.9.0"
 aiogram = "^3.7"
 aiogram-dialog = "^2.1.0"
 pydantic-settings = "^2.3.4"

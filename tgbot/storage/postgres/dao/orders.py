@@ -12,6 +12,7 @@ class BetDAO:
     async def get_order_of_user(
         self, order_id: int, user_id: int
     ) -> Bet | None:
+        """Return the bet only if `order_id` exists and is owned by this Telegram user."""
         stmt = (
             select(Bet)
             .join(PDUser, Bet.user_uuid == PDUser.user_uuid)

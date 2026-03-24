@@ -1,18 +1,21 @@
+from aiogram.enums import ParseMode
 from aiogram_dialog import Window
 from aiogram_dialog.widgets.kbd import Cancel
-from aiogram_dialog.widgets.text import Const
+from aiogram_dialog.widgets.text import Format
 
-from utils.text import TEXT_TECHNICAL_SUPPORT_RU, TEXT_BACK_RU
+from . import callbacks
+from . import getters
 from . import keyboards
 from . import states
-from . import callbacks
 
 
 def technical_support():
     window = Window(
-        TEXT_TECHNICAL_SUPPORT_RU,
+        Format("{support_text}"),
         keyboards.kbn_technical_support(callbacks.technical_support_callback),
-        Cancel(Const(TEXT_BACK_RU)),
+        Cancel(Format("{back_text}")),
         state=states.TechnicalSupport.select_support,
+        getter=getters.get_technical_support,
+        parse_mode=ParseMode.HTML,
     )
     return window

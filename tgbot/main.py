@@ -12,6 +12,7 @@ from aiohttp import web
 from bot import bot, bot_command, dp
 from config import settings
 from dialogs import include_dialogs
+from infrastructure.http_client import close_http_session, init_http_session
 from dialogs.menu.error import on_unknown_intent, on_unknown_state
 from middleware import register_global_middleware
 from routers import router
@@ -69,7 +70,6 @@ async def on_startup(bot: Bot) -> None:
 async def on_shutdown(bot: Bot) -> None:
     logging.info("Delete webhook")
     await bot.delete_webhook()
-    await db_helper.dispose()
 
 
 def run_webhook():

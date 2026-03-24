@@ -1,7 +1,8 @@
-from typing import Callable, Dict, Any, Awaitable
+from typing import Any, Awaitable, Callable, Dict
 
 from aiogram import BaseMiddleware
 from aiogram.types import Message
+from infrastructure.http_client import get_http_session
 from service.users import UsersService
 
 
@@ -14,5 +15,8 @@ class InitServiceMiddleware(BaseMiddleware):
         data: Dict[str, Any],
     ) -> Any:
         session = data["session_db"]
-        data["user_service"] = UsersService(session=session)
+        data["user_service"] = UsersService(
+            session=session,
+            http_session=get_http_session(),
+        )
         return await handler(event, data)

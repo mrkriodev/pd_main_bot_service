@@ -1,13 +1,13 @@
 import asyncio
 import logging
 
-from aiogram.types import Message, BufferedInputFile
-#from dexlotdb.models.order import StatusOrder
+import aiohttp
+from aiogram.types import BufferedInputFile, Message
 from models.pduser import PDUser
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from schemas.users import UserMessageSchema, SupportMessageSchema
-#from storage.postgres.dao.orders import OrderDao
+from exceptions.main_backend import MainBackendError
+from schemas.users import SupportMessageSchema, UserMessageSchema
 from storage.postgres.dao.orders import BetDAO
 from storage.postgres.dao.users import UserDAO
 from utils.render_img.draw import work_image
@@ -15,9 +15,13 @@ from utils.shared import get_message_for_shared_order
 
 
 class UsersService:
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(
+        self,
+        session: AsyncSession,
+        http_session: aiohttp.ClientSession,
+    ) -> None:
         self.session = session
-        self.user_dao = UserDAO(session=session)
+        self.user_dao = UserDAO(session=session, http_session=http_session)
         self.order_dao = BetDAO(session=session)
 
     async def get_user(self, user_id: int) -> PDUser:
@@ -30,7 +34,12 @@ class UsersService:
     async def add_new_user(self, user_data: UserMessageSchema):
         if await self.user_dao.get_user(user_id=user_data.id):
             return
-        await self.user_dao.create_user(user=user_data)
+        try:
+            await self.user_dao.create_user(user=user_data)
+        except MainBackendError:
+            await self.session.rollback()
+            logging.exception("Failed to register user %s via main backend", user_data.id)
+            raise
         await self.session.commit()
 
     async def add_new_user_from_reff_user(self, user_data: UserMessageSchema):
@@ -40,17 +49,30 @@ class UsersService:
         reff_user = await self.user_dao.get_user(user_id=user_data.reff_user_id)
         if reff_user is None:
             user_data.reff_user_id = None
+        try:
             await self.user_dao.create_user(user=user_data)
-            await self.session.commit()
-        else:
-            await self.user_dao.create_user(user=user_data)
-            await self.session.commit()
+        except MainBackendError:
+            await self.session.rollback()
+            logging.exception(
+                "Failed to register user %s via main backend (referral)",
+                user_data.id,
+            )
+            raise
+        await self.session.commit()
 
     async def receive_message_from_user_help(self, message: Message):
         user = await self.user_dao.get_user(user_id=message.from_user.id)
         if user is None:
             user_data = UserMessageSchema(**(message.from_user.model_dump()))
-            await self.user_dao.create_user(user=user_data)
+            try:
+                await self.user_dao.create_user(user=user_data)
+            except MainBackendError:
+                await self.session.rollback()
+                logging.exception(
+                    "Failed to register user %s via main backend (support)",
+                    message.from_user.id,
+                )
+                raise
 
         mess = SupportMessageSchema(
             user_id=message.from_user.id,
@@ -63,11 +85,19 @@ class UsersService:
     async def create_shared_order(self, message: Message, user_id: int, order_id: int):
         bet = await self.order_dao.get_order_of_user(order_id=order_id, user_id=user_id)
         if bet is None:
-            logging.warning(f"User: {user_id} shared not exist bet: {order_id}")
+            logging.warning(
+                "Share order ignored: bet_id=%s not found or not owned by telegram user_id=%s",
+                order_id,
+                user_id,
+            )
             return None
 
         if bet.close_price is None:
-            logging.warning(f"User: {user_id} shared not closed bet: {order_id}")
+            logging.warning(
+                "Share order ignored: bet_id=%s belongs to user_id=%s but is not closed yet",
+                order_id,
+                user_id,
+            )
             return None
 
         result_profit = (

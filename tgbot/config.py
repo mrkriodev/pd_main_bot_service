@@ -36,6 +36,15 @@ class BotNotification(BaseModel):
     password_service_convert: str = ""
 
 
+class MainBackendSettings(BaseModel):
+    """Main web app / REST API (admin user registration, etc.)."""
+
+    base_url: str = "https://pumpdumpapp.com"
+    admin_register_path: str = "/api/admin/register_user"
+    admin_token: str = ""
+    timeout_seconds: float = 30.0
+
+
 class BotSettings(BaseModel):
     token: str
     support_chat_id: int = -1003789795601  # pumpdump_channel
@@ -56,6 +65,7 @@ class Settings(BaseSettings):
 
     db: DatabaseSettings
     bot: BotSettings
+    main_backend: MainBackendSettings = Field(default_factory=MainBackendSettings)
     redis: RedisDsn | None = None
     rabbitmq: AmqpDsn | None = None
 

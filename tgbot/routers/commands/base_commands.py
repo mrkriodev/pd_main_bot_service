@@ -33,6 +33,8 @@ async def shared_order(
     command: CommandObject,
     user_service: UsersService,
 ):
+    """Deep link /start shareorder_<bet_id>. Image is built only if the bet exists and
+    belongs to the caller (enforced in BetDAO.get_order_of_user)."""
     order_id = command.args[len("shareorder_") :]
     user = await user_service.get_user(message.from_user.id)
     if user is None:
