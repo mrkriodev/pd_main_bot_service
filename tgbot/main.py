@@ -19,7 +19,18 @@ from routers import router
 from storage.postgres.db_helper import db_helper
 
 
+async def on_startup_http_client(bot: Bot) -> None:
+    await init_http_session()
+
+
+async def on_shutdown_app_resources(bot: Bot) -> None:
+    await close_http_session()
+    await db_helper.dispose()
+
+
 def register_functions():
+    dp.startup.register(on_startup_http_client)
+    dp.shutdown.register(on_shutdown_app_resources)
     register_global_middleware(dp=dp)
 
     dp.errors.register(
