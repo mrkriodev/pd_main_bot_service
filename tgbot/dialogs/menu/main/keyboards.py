@@ -1,4 +1,4 @@
-from aiogram_dialog.widgets.kbd import Group, Button, WebApp, Row, Url
+from aiogram_dialog.widgets.kbd import Group, Button, WebApp, Row
 from aiogram_dialog.widgets.text import Const
 from config import settings
 
@@ -60,8 +60,19 @@ def main_menu():
         #         url=Const(f"{settings.bot.webapp}/webapp/aichat"),
         #     )
         # ),
+        # External support bot link (kept for reference):
+        # Row(
+        #     Url(
+        #         Const("🆘 Support"),
+        #         url=Const("https://t.me/pumdump_support_bot?start"),
+        #     )
+        # ),
         Row(
-            Url(Const("🆘 Support"), url=Const("https://t.me/pumdump_support_bot?start"))
+            Button(
+                Const("🆘 Support"),
+                id="technical_support",
+                on_click=callbacks.click_btn_technical_support,
+            )
         ),
     )
 
