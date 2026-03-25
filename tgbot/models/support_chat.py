@@ -5,7 +5,7 @@ from .base import Base
 
 
 class SupportChat(Base):
-    __tablename__ = "support_chats"
+    __tablename__ = "support_chat_messages"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.telegram_id"), nullable=False)
