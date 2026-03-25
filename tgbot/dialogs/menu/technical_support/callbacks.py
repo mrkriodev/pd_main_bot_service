@@ -2,7 +2,8 @@ import logging
 from typing import Any
 
 from aiogram.types import CallbackQuery, Message
-from aiogram_dialog import DialogManager
+from aiogram_dialog import DialogManager, ShowMode, StartMode
+from dialogs.menu.main.states import BotMenu
 from service.users import UsersService
 from utils import text as text_utils
 from config import settings
@@ -31,4 +32,9 @@ async def technical_support_callback(m: Message, widget: Any, manager: DialogMan
     except Exception:
         logger.exception("Failed to forward support message to support chat")
 
-    await manager.done()
+    #await manager.done()
+    await manager.start(
+        BotMenu.select_main_menu,
+        mode=StartMode.RESET_STACK,
+        show_mode=ShowMode.SEND,
+    )
