@@ -94,10 +94,10 @@ async def support(
     user_service: UsersService,
     dialog_manager: DialogManager,
 ):
-    await add_new_user(message=message, user_service=user_service)
+    # Do not pre-create user here; support flow will create/check on first message.
+    # Keep this command minimal to guarantee dialog state is entered.
     await dialog_manager.start(
         TechnicalSupport.select_support,
         mode=StartMode.RESET_STACK,
-        show_mode=ShowMode.DELETE_AND_SEND,
+        show_mode=ShowMode.SEND,
     )
-    await message.delete()
