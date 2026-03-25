@@ -26,4 +26,5 @@ dp = Dispatcher(storage=storage)
 
 bot_command = [
     BotCommand(command="start", description="Start bot"),
+    BotCommand(command="support", description="Open support chat"),
 ]

@@ -2,12 +2,13 @@ import logging
 from typing import Optional
 
 from aiogram import Router
-from aiogram.filters import CommandStart, CommandObject
+from aiogram.filters import Command, CommandObject, CommandStart
 from aiogram.types import Message
 from aiogram.utils.deep_linking import decode_payload
 from aiogram_dialog import DialogManager, StartMode, ShowMode
 
 from dialogs.menu.main.states import BotMenu
+from dialogs.menu.technical_support.states import TechnicalSupport
 from filters.deep_links import FilterCustomLink
 from schemas.users import UserMessageSchema
 from service.users import UsersService
@@ -81,6 +82,21 @@ async def start(
     await add_new_user(message=message, user_service=user_service)
     await dialog_manager.start(
         BotMenu.select_main_menu,
+        mode=StartMode.RESET_STACK,
+        show_mode=ShowMode.DELETE_AND_SEND,
+    )
+    await message.delete()
+
+
+@router.message(Command("support"))
+async def support(
+    message: Message,
+    user_service: UsersService,
+    dialog_manager: DialogManager,
+):
+    await add_new_user(message=message, user_service=user_service)
+    await dialog_manager.start(
+        TechnicalSupport.select_support,
         mode=StartMode.RESET_STACK,
         show_mode=ShowMode.DELETE_AND_SEND,
     )
