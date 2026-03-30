@@ -100,11 +100,11 @@ class UsersService:
             )
             return None
 
-        result_profit = (
-            (bet.close_price / bet.open_price) * 100 - 100
-            if bet.open_price != 0
-            else 0
-        )
+        # result_profit = (
+        #     (bet.close_price / bet.open_price) * 100 - 100
+        #     if bet.open_price != 0
+        #     else 0
+        # )
         pair_parts = [p.strip() for p in bet.pair.replace("-", "/").split("/")]
         base_symbol = pair_parts[0] if len(pair_parts) > 0 else ""
         quote_symbol = pair_parts[1] if len(pair_parts) > 1 else ""
@@ -113,8 +113,8 @@ class UsersService:
             work_image.get_image_for_share_order,
             base_symbol,
             quote_symbol,
-            True if result_profit >= 0 else False,
-            result_profit,
+            True if bet.sum >= 0 else False,
+            bet.sum, #result_profit,
             bet.open_price,
             bet.close_price,
         )

@@ -22,8 +22,8 @@ class LocalImage:
         self,
         base_token: str,
         quote_token: str,
-        profit: bool,
-        percent: Decimal,
+        sign_of_order: bool,
+        bet_sum: Decimal, #percent: Decimal,
         open_price: Decimal,
         close_price: Decimal,
     ):
@@ -65,11 +65,11 @@ class LocalImage:
         )
 
         # Рисуем вторую строку
-        sign = "+" if profit else ""
-        fill = (0, 255, 0, 255) if profit else (255, 0, 0, 255)
+        sign = "+" if sign_of_order else ""
+        fill = (0, 255, 0, 255) if sign_of_order else (255, 0, 0, 255)
         draw.text(
             positions[1],
-            f"{sign}{percent.quantize(Decimal('0.00'))}%",
+            f"{sign}{abs(bet_sum)}", #f"{sign}{percent.quantize(Decimal('0.00'))}%",
             fill=fill,
             font=font_large,
         )
