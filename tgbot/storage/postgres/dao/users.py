@@ -30,7 +30,7 @@ class UserDAO:
     async def _register_user_via_backend(
         self,
         user: UserMessageSchema,
-        referrer_code: str | None,
+        inviter_tg_id: int | None,
     ) -> None:
         if not settings.main_backend.admin_token.strip():
             raise MainBackendConfigError(
@@ -56,8 +56,8 @@ class UserDAO:
             "last_name": user.last_name or "",
             "username": user.username or "",
         }
-        if referrer_code:
-            body["referrer"] = referrer_code
+        if inviter_tg_id is not None:
+            body["inviter_tg_id"] = str(inviter_tg_id)
 
         headers = {
             "Content-Type": "application/json",
@@ -88,13 +88,10 @@ class UserDAO:
             ) from e
 
     async def create_user(self, user: UserMessageSchema) -> None:
-        referrer_code: str | None = None
-        if user.reff_user_id is not None:
-            referrer = await self.get_user(user_id=user.reff_user_id)
-            if referrer is not None and referrer.main_ref:
-                referrer_code = referrer.main_ref
-
-        await self._register_user_via_backend(user, referrer_code=referrer_code)
+        await self._register_user_via_backend(
+            user,
+            inviter_tg_id=user.inviter_tg_id,
+        )
 
     async def get_user(self, user_id: int) -> PDUser | None:
         stmt = select(PDUser).where(PDUser.telegram_id == user_id)
@@ -105,7 +102,7 @@ class UserDAO:
         mess = SupportChat(**(message.model_dump()))
         self.session.add(mess)
 
-    async def count_reff_users_by_user(self, user_id):
+    async def count_ref_users_by_user(self, user_id):
         user = await self.get_user(user_id=user_id)
         if user is None or user.user_uuid is None:
             return 0

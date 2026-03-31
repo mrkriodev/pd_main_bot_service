@@ -27,8 +27,8 @@ class UsersService:
     async def get_user(self, user_id: int) -> PDUser:
         return await self.user_dao.get_user(user_id)
 
-    async def count_reff_users_by_user_id(self, user_id) -> int:
-        count = await self.user_dao.count_reff_users_by_user(user_id=user_id)
+    async def count_ref_users_by_user_id(self, user_id) -> int:
+        count = await self.user_dao.count_ref_users_by_user(user_id=user_id)
         return count if count else 0
 
     async def add_new_user(self, user_data: UserMessageSchema):
@@ -42,13 +42,10 @@ class UsersService:
             raise
         await self.session.commit()
 
-    async def add_new_user_from_reff_user(self, user_data: UserMessageSchema):
+    async def add_new_user_from_inviter(self, user_data: UserMessageSchema):
         user = await self.user_dao.get_user(user_id=user_data.id)
         if user is not None:
             return
-        reff_user = await self.user_dao.get_user(user_id=user_data.reff_user_id)
-        if reff_user is None:
-            user_data.reff_user_id = None
         try:
             await self.user_dao.create_user(user=user_data)
         except MainBackendError:

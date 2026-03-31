@@ -8,7 +8,7 @@ class UserMessageSchema(BaseModel):
     first_name: str | None
     last_name: str | None
     language_code: str | None
-    reff_user_id: int | None = None
+    inviter_tg_id: int | None = None
 
 
 class SupportMessageSchema(BaseModel):

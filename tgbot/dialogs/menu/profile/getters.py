@@ -11,7 +11,7 @@ async def get_profile(dialog_manager: DialogManager, **middleware_data):
     cq = update.callback_query
     user_id = cq.from_user.id
     lang = cq.from_user.language_code
-    count_reff = await user_service.count_reff_users_by_user_id(user_id)
+    count_reff = await user_service.count_ref_users_by_user_id(user_id)
     username_bot = cq.message.from_user.username
     link = create_deep_link(
         username=username_bot, link_type="start", payload=str(user_id), encode=True

@@ -17,15 +17,18 @@ router = Router(name=__name__)
 
 
 async def add_new_user(
-    message: Message, user_service: UsersService, ref_id: Optional[int] = None
+    message: Message,
+    user_service: UsersService,
+    inviter_tg_id: Optional[int] = None,
 ):
     user_data = UserMessageSchema(
-        **(message.from_user.model_dump()), reff_user_id=ref_id
+        **(message.from_user.model_dump()),
+        inviter_tg_id=inviter_tg_id,
     )
-    if ref_id is None:
+    if inviter_tg_id is None:
         await user_service.add_new_user(user_data=user_data)
     else:
-        await user_service.add_new_user_from_reff_user(user_data=user_data)
+        await user_service.add_new_user_from_inviter(user_data=user_data)
 
 
 @router.message(CommandStart(deep_link=True), FilterCustomLink(link="shareorder_"))
@@ -56,14 +59,26 @@ async def referral_user(
     user_service: UsersService,
     dialog_manager: DialogManager,
 ):
-    payload = None
+    inviter_tg_id: int | None = None
     try:
-        payload = int(decode_payload(command.args))
+        payload = decode_payload(command.args)
+        if payload.isdigit():
+            inviter_tg_id = int(payload)
+        else:
+            logging.warning(
+                "Deep link payload is not numeric inviter_tg_id: %r (user_id=%s)",
+                payload,
+                message.from_user.id,
+            )
     except Exception as e:
         logging.error(e)
         logging.warning(f"{message.from_user.id} try crack link. Args: {command.args}")
 
-    await add_new_user(message=message, user_service=user_service, ref_id=payload)
+    await add_new_user(
+        message=message,
+        user_service=user_service,
+        inviter_tg_id=inviter_tg_id,
+    )
 
     await dialog_manager.start(
         BotMenu.select_main_menu,
