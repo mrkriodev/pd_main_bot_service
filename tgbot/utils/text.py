@@ -35,12 +35,14 @@ _TECH_SUPPORT = {
     "ru": Template("Если у Вас случилась какая-то проблема. Опишите ее."),
 }
 
+# <code>{{ link }}</code>
+
 _PROFILE = {
     "en": Template(
         """
 Share your referral link and get a bonus:
 
-<code>{{ link }}</code>
+<a href="{{ link }}">{{ link }}</a>
 
 Invites: {{ count_reff }}
 
@@ -57,7 +59,7 @@ Your wallet:
         """
 Поделись своей реферальной ссылкой и получи бонус:
 
-<code>{{ link }}</code>
+<a href="{{ link }}">{{ link }}</a>
 
 Количество приглашений: {{ count_reff }}
 

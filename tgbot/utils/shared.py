@@ -16,7 +16,7 @@ def get_message_for_shared_order(user_id: int):
     link_to_nft_market = settings.bot.notification.link_to_nft_market
     message = (
         f"🚀 Поделись со своими друзьями и получай сниженную комиссию навсегда:\n"
-        f"<code>{link}</code>\n\n"
+        f'<a href="{link}">{link}</a>\n\n'
         f'🫶 Подпишись на наш <a href="{link_channel}">канал</a>:\n'
         f"{link_channel}"
         # f'\n\n🏬 Купить наше <a href="{link_to_nft_market}">NFT</a>:\n'
