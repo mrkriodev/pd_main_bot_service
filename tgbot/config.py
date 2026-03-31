@@ -51,7 +51,7 @@ class BotSettings(BaseModel):
     #support_thread_id: int = 2
     run_polling: bool | None
     run_webhook: WebHookSettings | None
-    webapp: Optional[str] = "https://pumpdumpapp.com/"
+    webapp: Optional[str] = "https://pumpdumpapp.com"
     notification: BotNotification = Field(default_factory=BotNotification)
 
 

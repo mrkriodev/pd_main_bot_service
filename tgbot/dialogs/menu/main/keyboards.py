@@ -18,13 +18,13 @@ def main_menu():
             #     url=Const(f"{settings.bot.webapp}/profile"),
             # ),
         ),
-        Row(
-            WebApp(
-                Const("💼 My Achives"),
-                id="webapp_order_list",
-                url=Const(f"{settings.bot.webapp}/profile"),
-            ),
-        ),
+        # Row(
+        #     WebApp(
+        #         Const("💼 My Achives"),
+        #         id="webapp_order_list",
+        #         url=Const(f"{settings.bot.webapp}/profile"),
+        #     ),
+        # ),
         # Row(
         #     Button(
         #         Const("👤 Invite friend"),
