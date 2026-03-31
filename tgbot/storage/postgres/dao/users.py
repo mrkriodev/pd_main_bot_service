@@ -30,7 +30,7 @@ class UserDAO:
     async def _register_user_via_backend(
         self,
         user: UserMessageSchema,
-        inviter_tg_id: int | None,
+        inviter_deeplink_refcode: str | None,
     ) -> None:
         if not settings.main_backend.admin_token.strip():
             raise MainBackendConfigError(
@@ -56,8 +56,8 @@ class UserDAO:
             "last_name": user.last_name or "",
             "username": user.username or "",
         }
-        if inviter_tg_id is not None:
-            body["inviter_tg_id"] = str(inviter_tg_id)
+        if inviter_deeplink_refcode:
+            body["inviter_deeplink_refcode"] = inviter_deeplink_refcode
 
         headers = {
             "Content-Type": "application/json",
@@ -90,7 +90,7 @@ class UserDAO:
     async def create_user(self, user: UserMessageSchema) -> None:
         await self._register_user_via_backend(
             user,
-            inviter_tg_id=user.inviter_tg_id,
+            inviter_deeplink_refcode=user.inviter_deeplink_refcode,
         )
 
     async def get_user(self, user_id: int) -> PDUser | None:

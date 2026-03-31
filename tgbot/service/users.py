@@ -42,7 +42,7 @@ class UsersService:
             raise
         await self.session.commit()
 
-    async def add_new_user_from_inviter(self, user_data: UserMessageSchema):
+    async def add_new_user_from_inviter_refcode(self, user_data: UserMessageSchema):
         user = await self.user_dao.get_user(user_id=user_data.id)
         if user is not None:
             return

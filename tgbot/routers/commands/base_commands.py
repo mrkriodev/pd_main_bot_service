@@ -1,10 +1,8 @@
 import logging
-from typing import Optional
 
 from aiogram import Router
 from aiogram.filters import Command, CommandObject, CommandStart
 from aiogram.types import Message
-from aiogram.utils.deep_linking import decode_payload
 from aiogram_dialog import DialogManager, StartMode, ShowMode
 
 from dialogs.menu.main.states import BotMenu
@@ -19,16 +17,16 @@ router = Router(name=__name__)
 async def add_new_user(
     message: Message,
     user_service: UsersService,
-    inviter_tg_id: Optional[int] = None,
+    inviter_deeplink_refcode: str | None = None,
 ):
     user_data = UserMessageSchema(
         **(message.from_user.model_dump()),
-        inviter_tg_id=inviter_tg_id,
+        inviter_deeplink_refcode=inviter_deeplink_refcode,
     )
-    if inviter_tg_id is None:
+    if not inviter_deeplink_refcode:
         await user_service.add_new_user(user_data=user_data)
     else:
-        await user_service.add_new_user_from_inviter(user_data=user_data)
+        await user_service.add_new_user_from_inviter_refcode(user_data=user_data)
 
 
 @router.message(CommandStart(deep_link=True), FilterCustomLink(link="shareorder_"))
@@ -59,17 +57,9 @@ async def referral_user(
     user_service: UsersService,
     dialog_manager: DialogManager,
 ):
-    inviter_tg_id: int | None = None
+    inviter_deeplink_refcode: str | None = None
     try:
-        payload = decode_payload(command.args)
-        if payload.isdigit():
-            inviter_tg_id = int(payload)
-        else:
-            logging.warning(
-                "Deep link payload is not numeric inviter_tg_id: %r (user_id=%s)",
-                payload,
-                message.from_user.id,
-            )
+        inviter_deeplink_refcode = command.args.strip() or None
     except Exception as e:
         logging.error(e)
         logging.warning(f"{message.from_user.id} try crack link. Args: {command.args}")
@@ -77,7 +67,7 @@ async def referral_user(
     await add_new_user(
         message=message,
         user_service=user_service,
-        inviter_tg_id=inviter_tg_id,
+        inviter_deeplink_refcode=inviter_deeplink_refcode,
     )
 
     await dialog_manager.start(
