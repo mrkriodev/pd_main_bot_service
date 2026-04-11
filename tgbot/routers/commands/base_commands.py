@@ -1,6 +1,7 @@
 import logging
 
 from aiogram import Router
+from aiogram.exceptions import TelegramAPIError, TelegramNetworkError
 from aiogram.filters import Command, CommandObject, CommandStart
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode, ShowMode
@@ -42,12 +43,26 @@ async def shared_order(
     if user is None:
         return
     if order_id.isdigit():
-        await user_service.create_shared_order(
-            message=message,
-            user_id=message.from_user.id,
-            order_id=int(order_id),
+        try:
+            await user_service.create_shared_order(
+                message=message,
+                user_id=message.from_user.id,
+                order_id=int(order_id),
+            )
+        except Exception:
+            logging.exception(
+                "Unhandled error in share_order flow: user_id=%s order_id=%s",
+                message.from_user.id,
+                order_id,
+            )
+    try:
+        await message.delete()
+    except (TelegramNetworkError, TelegramAPIError):
+        logging.warning(
+            "Unable to delete /start shareorder message: user_id=%s order_id=%s",
+            message.from_user.id,
+            order_id,
         )
-    await message.delete()
 
 
 @router.message(CommandStart(deep_link=True), FilterCustomLink())

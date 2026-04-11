@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 import aiohttp
+from aiogram.exceptions import TelegramAPIError, TelegramNetworkError
 from aiogram.types import BufferedInputFile, Message
 from models.pduser import PDUser
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -118,8 +119,23 @@ class UsersService:
 
         caption = get_message_for_shared_order(user_id=message.from_user.id)
 
-        await message.bot.send_photo(
-            chat_id=message.chat.id,
-            photo=BufferedInputFile(file=image_bytes, filename="image.png"),
-            caption=caption,
-        )
+        try:
+            await message.bot.send_photo(
+                chat_id=message.chat.id,
+                photo=BufferedInputFile(file=image_bytes, filename="image.png"),
+                caption=caption,
+            )
+        except TelegramNetworkError:
+            logging.exception(
+                "Share order send_photo timeout/network error: user_id=%s order_id=%s",
+                user_id,
+                order_id,
+            )
+            return None
+        except TelegramAPIError:
+            logging.exception(
+                "Share order send_photo Telegram API error: user_id=%s order_id=%s",
+                user_id,
+                order_id,
+            )
+            return None
