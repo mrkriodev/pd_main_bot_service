@@ -81,7 +81,7 @@ RUN --mount=type=cache,target=/root/.cache \
 FROM python-base as production
 # Pin Telegram API to IPv4 DC (avoids broken IPv6 path in some Docker networks).
 # Update if api.telegram.org DC IPs change.
-RUN printf '%s\n' '149.154.166.110 api.telegram.org' >> /etc/hosts
+RUN echo "149.154.166.110 api.telegram.org" >> /etc/hosts
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 WORKDIR /app
 COPY tgbot/ .
