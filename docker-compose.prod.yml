@@ -12,6 +12,9 @@ services:
     env_file: .env
     environment:
       - MPLCONFIGDIR=/tmp/matplotlib
+    extra_hosts:
+      - "api.telegram.org=149.154.166.110"
+      - "api.telegram.org=[2001:67c:4e8:f004::9]"
     ports:
       - "${DOCKER_IP}:${DOCKER_PORT}:8080"
     networks:
