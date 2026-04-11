@@ -21,11 +21,14 @@ services:
     image: redis:latest
     container_name: dexlot-bot-redis-prod
     volumes:
-      - ./redis-data/:/data:rw
+      - redis-data:/data
     restart: unless-stopped
-    user: "1000:1000"
+    #user: "1000:1000"
     networks:
       - dexlot-bot-network-prod  
+
+volumes:
+    redis-data:
 
 networks:
     dexlot-bot-network-prod:
