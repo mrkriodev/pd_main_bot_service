@@ -1,5 +1,8 @@
+import socket
+
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
@@ -18,8 +21,13 @@ storage = (
 )
 
 
+telegram_session = AiohttpSession()
+# Force IPv4 to avoid broken IPv6 routing inside container.
+telegram_session._connector_init["family"] = socket.AF_INET
+
 bot = Bot(
     token=settings.bot.token,
+    session=telegram_session,
     default=DefaultBotProperties(parse_mode=ParseMode.HTML),
 )
 dp = Dispatcher(storage=storage)
