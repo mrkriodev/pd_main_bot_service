@@ -2,12 +2,13 @@ import asyncio
 import logging
 
 from aiogram import Bot
+from aiogram.exceptions import TelegramAPIError, TelegramNetworkError
 from aiogram.filters import ExceptionTypeFilter
 from aiogram.types import BotCommandScopeAllPrivateChats
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from aiogram_dialog import setup_dialogs
 from aiogram_dialog.api.exceptions import UnknownIntent, UnknownState, OutdatedIntent
-from aiohttp import web
+from aiohttp import ClientSession, ClientTimeout, web
 
 from bot import bot, bot_command, dp
 from config import settings
@@ -62,25 +63,113 @@ async def setup_menu_bot_commands():
     )
 
 
+async def _check_tcp_connectivity(host: str, port: int, timeout_seconds: float = 3.0) -> bool:
+    try:
+        reader, writer = await asyncio.wait_for(
+            asyncio.open_connection(host, port),
+            timeout=timeout_seconds,
+        )
+        writer.close()
+        await writer.wait_closed()
+        return True
+    except Exception:
+        return False
+
+
+async def _check_api_telegram_org(timeout_seconds: float = 5.0) -> bool:
+    try:
+        timeout = ClientTimeout(total=timeout_seconds)
+        async with ClientSession(timeout=timeout) as session:
+            async with session.get("https://api.telegram.org") as resp:
+                return 200 <= resp.status < 500
+    except Exception:
+        return False
+
+
+async def _startup_network_checks() -> None:
+    telegram_ok, dns_ok = await asyncio.gather(
+        _check_api_telegram_org(),
+        _check_tcp_connectivity("8.8.8.8", 53),
+    )
+    logging.info("Startup network check api.telegram.org: %s", telegram_ok)
+    logging.info("Startup network check 8.8.8.8:53: %s", dns_ok)
+    if not telegram_ok:
+        logging.error("api.telegram.org is not reachable from container")
+    if not dns_ok:
+        logging.error("8.8.8.8:53 is not reachable from container")
+
+
+async def _retry_telegram_call(
+    action_name: str,
+    call,
+    *,
+    attempts: int = 5,
+    base_delay_seconds: float = 2.0,
+) -> bool:
+    for attempt in range(1, attempts + 1):
+        try:
+            await call()
+            return True
+        except TelegramNetworkError:
+            logging.exception(
+                "%s failed due to network timeout (attempt %s/%s)",
+                action_name,
+                attempt,
+                attempts,
+            )
+        except TelegramAPIError:
+            logging.exception(
+                "%s failed due to Telegram API error (attempt %s/%s)",
+                action_name,
+                attempt,
+                attempts,
+            )
+            break
+
+        if attempt < attempts:
+            await asyncio.sleep(base_delay_seconds * attempt)
+
+    logging.error("%s failed after %s attempt(s)", action_name, attempts)
+    return False
+
+
 async def run_polling():
-    await setup_menu_bot_commands()
+    await _startup_network_checks()
+    await _retry_telegram_call(
+        "Registration bot command",
+        setup_menu_bot_commands,
+    )
     await dp.start_polling(bot, skip_updates=True)
 
 
 async def on_startup(bot: Bot) -> None:
+    await _startup_network_checks()
     logging.info("Registration bot command")
-    await setup_menu_bot_commands()
+    await _retry_telegram_call(
+        "Registration bot command",
+        setup_menu_bot_commands,
+    )
 
     logging.info("Registration webhook")
-    await bot.set_webhook(
-        f"{settings.bot.run_webhook.base_webhook_url}{settings.bot.run_webhook.webhook_path}",
-        secret_token=settings.bot.run_webhook.webhook_secret,
+    webhook_url = (
+        f"{settings.bot.run_webhook.base_webhook_url}"
+        f"{settings.bot.run_webhook.webhook_path}"
+    )
+    await _retry_telegram_call(
+        "Registration webhook",
+        lambda: bot.set_webhook(
+            webhook_url,
+            secret_token=settings.bot.run_webhook.webhook_secret,
+        ),
     )
 
 
 async def on_shutdown(bot: Bot) -> None:
     logging.info("Delete webhook")
-    await bot.delete_webhook()
+    try:
+        await bot.delete_webhook()
+    except (TelegramNetworkError, TelegramAPIError):
+        logging.exception("Failed to delete webhook during shutdown")
 
 
 def run_webhook():
